@@ -1,6 +1,10 @@
 FROM php:8.2-apache
 
-# install dependency
+# hapus SEMUA MPM dulu (ini kuncinya)
+RUN rm -f /etc/apache2/mods-enabled/mpm_*.load \
+    && rm -f /etc/apache2/mods-enabled/mpm_*.conf \
+    && a2enmod mpm_prefork
+
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -10,7 +14,6 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     && docker-php-ext-install pdo pdo_mysql zip mbstring exif bcmath gd
 
-# enable rewrite
 RUN a2enmod rewrite
 
 WORKDIR /var/www/html
