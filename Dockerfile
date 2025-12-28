@@ -2,7 +2,6 @@ FROM php:8.2-cli
 
 WORKDIR /app
 
-# install system deps
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -16,13 +15,14 @@ COPY . .
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# BIKIN .env DUMMY UNTUK BUILD
+# 1️⃣ install dependency DULU
+RUN composer install --no-dev --optimize-autoloader
+
+# 2️⃣ baru bikin .env
 RUN cp .env.example .env
 
-# generate key (INI WAJIB)
+# 3️⃣ baru generate key
 RUN php artisan key:generate
-
-RUN composer install --no-dev --optimize-autoloader
 
 EXPOSE 80
 
