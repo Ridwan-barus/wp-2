@@ -1,11 +1,6 @@
 FROM php:8.2-apache
 
-# MATIKAN SEMUA MPM (paksa)
-RUN a2dismod mpm_event mpm_worker mpm_prefork || true \
-    && rm -f /etc/apache2/mods-enabled/mpm_*.load \
-    && rm -f /etc/apache2/mods-enabled/mpm_*.conf \
-    && a2enmod mpm_prefork
-
+# install dependency
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -13,8 +8,9 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    && docker-php-ext-install pdo pdo_mysql zip mbstring exif pcntl bcmath gd
+    && docker-php-ext-install pdo pdo_mysql zip mbstring exif bcmath gd
 
+# enable rewrite
 RUN a2enmod rewrite
 
 WORKDIR /var/www/html
