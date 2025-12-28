@@ -1,10 +1,8 @@
-FROM php:8.2-apache
+FROM php:8.2-cli
 
-# hapus SEMUA MPM dulu (ini kuncinya)
-RUN rm -f /etc/apache2/mods-enabled/mpm_*.load \
-    && rm -f /etc/apache2/mods-enabled/mpm_*.conf \
-    && a2enmod mpm_prefork
+WORKDIR /app
 
+# install system deps
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -12,18 +10,20 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
-    && docker-php-ext-install pdo pdo_mysql zip mbstring exif bcmath gd
-
-RUN a2enmod rewrite
-
-WORKDIR /var/www/html
+    && docker-php-ext-install pdo pdo_mysql zip mbstring bcmath gd
 
 COPY . .
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+# BIKIN .env DUMMY UNTUK BUILD
+RUN cp .env.example .env
+
+# generate key (INI WAJIB)
+RUN php artisan key:generate
+
 RUN composer install --no-dev --optimize-autoloader
 
-RUN chown -R www-data:www-data storage bootstrap/cache
-
 EXPOSE 80
+
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=80"]
